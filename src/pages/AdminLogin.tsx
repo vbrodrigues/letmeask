@@ -42,7 +42,13 @@ export function AdminLogin() {
             icon={<GoogleLogo weight="fill" size={24} />}
             onClick={handleLogin}
           />
-          <span className="text-gray-400">ou entre em uma sala</span>
+
+          <div className="flex items-center">
+            <div className="h-[1px] w-16 border-t border-gray-400 mr-4"></div>
+            <span className="text-gray-400">ou entre em uma sala</span>
+            <div className="h-[1px] w-16 border-t border-gray-400 ml-4"></div>
+          </div>
+
           <div>
             <form className="flex flex-col gap-4" onSubmit={handleEnterRoom}>
               <input

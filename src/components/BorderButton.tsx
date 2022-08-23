@@ -30,7 +30,7 @@ export function BorderButton({
   return (
     <button
       {...rest}
-      className={`flex gap-2 font-medium justify-center items-center rounded-lg hover:opacity-80 transition-opacity 
+      className={`flex gap-2 font-medium justify-center items-center rounded-lg hover:brightness-75 transition-all 
       ${BorderButtonColor[color]}
       ${BorderButtonSize[size]} `}
     >
