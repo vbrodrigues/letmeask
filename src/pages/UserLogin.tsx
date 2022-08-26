@@ -5,22 +5,16 @@ import bannerImg from "../assets/Banner.svg";
 import logoImg from "../assets/Logo.svg";
 import googleLogo from "../assets/Google.svg";
 import { SolidButton } from "../components/SolidButton";
-import { useAuth } from "../hooks/useAuth";
 import { useRooms } from "../hooks/useRoom";
 
-export function AdminLogin() {
+export function UserLogin() {
   const [roomNumber, setRoomNumber] = useState("");
-
-  const { signInWithGoogle, user } = useAuth();
 
   const { getRoomByNumber } = useRooms();
 
   const navigate = useNavigate();
 
-  async function handleLogin() {
-    if (!user) {
-      await signInWithGoogle();
-    }
+  function handleLogin() {
     navigate("/rooms/new");
   }
 

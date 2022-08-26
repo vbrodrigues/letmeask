@@ -10,7 +10,7 @@ enum SolidButtonSize {
 enum SolidButtonColor {
   main = "bg-purple-300 text-gray-100",
   danger = "bg-red-300 text-gray-100",
-  grayed = "bg-gray-300 text-gray-700",
+  grayed = "bg-gray-500 text-gray-700",
 }
 
 interface SolidButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {

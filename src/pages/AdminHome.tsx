@@ -1,18 +1,30 @@
-import { useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { User } from "phosphor-react";
+import { FormEvent, useState } from "react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import bannerImg from "../assets/Banner.svg";
 import logoImg from "../assets/Logo.svg";
 import { SolidButton } from "../components/SolidButton";
+import { useAuth } from "../hooks/useAuth";
+import { useRooms } from "../hooks/useRoom";
 
 export function AdminHome() {
   const [roomName, setRoomName] = useState("");
 
+  const { user, signOut } = useAuth();
+
+  const { createRoom } = useRooms();
+
   const navigate = useNavigate();
 
-  function handleCreateRoom(event) {
+  async function handleCreateRoom(event: FormEvent) {
     event.preventDefault();
-    const roomNumber = Math.floor(Math.random() * 899999 + 100000);
-    navigate(`/rooms/${roomNumber}&${roomName}`);
+
+    if (!roomName.trim()) {
+      return;
+    }
+    const roomId = await createRoom(roomName);
+
+    navigate(`/admin/rooms/${roomId}`);
   }
 
   return (
@@ -32,28 +44,49 @@ export function AdminHome() {
       <main className="flex flex-col flex-1 h-[100vh] justify-center items-center">
         <div className="flex flex-col gap-8 max-w-xs justify-center items-center">
           <img src={logoImg} alt="" className="h-20 mb-14" />
-          <p className="text-2xl font-bold">Crie uma nova sala</p>
+
+          <div className="flex gap-4 items-center">
+            <span className="flex items-center gap-3">
+              <span className="bg-purple-300 rounded-full w-10 h-10 overflow-hidden flex justify-center items-center">
+                {user?.avatar ? (
+                  <img src={user?.avatar} alt="" />
+                ) : (
+                  <User color="#fff" size={20} />
+                )}
+              </span>
+              <strong>{user?.name}</strong>
+            </span>
+          </div>
+
+          <p className="text-2xl font-bold font-title">Crie uma nova sala</p>
+
           <div>
             <form className="flex flex-col gap-4" onSubmit={handleCreateRoom}>
               <input
                 type="text"
                 placeholder="Nome da sala"
-                className="border border-gray-400 text-gray-800 py-3 px-4 rounded-lg outline-none appearance-none font-semibold placeholder:text-base"
+                className="border border-gray-400 spacing tracking-wide text-gray-700 py-3 px-4 rounded-lg outline-none appearance-none font-semibold placeholder:font-normal placeholder:text-base"
                 onChange={(event) => setRoomName(event.target.value)}
               />
 
               <SolidButton type="submit" color="main" text="Criar sala" />
-
-              <span className="text-sm">
-                Quer entrar em uma sala já existente?{" "}
-                <NavLink to="/admin/login">
-                  <a href="#" className="text-purple-500">
-                    Clique aqui
-                  </a>
-                </NavLink>
-              </span>
             </form>
           </div>
+          <span className="text-sm">
+            Quer entrar em uma sala já existente?{" "}
+            <NavLink to="/admin/login">
+              <a href="#" className="text-purple-500">
+                Clique aqui
+              </a>
+            </NavLink>
+          </span>
+          <Link
+            to="/admin/login"
+            className="text-purple-300 hover:opacity-70 transition-opacity"
+            onClick={() => signOut()}
+          >
+            Sair
+          </Link>
         </div>
       </main>
     </div>

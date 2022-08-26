@@ -3,7 +3,11 @@ module.exports = {
   content: ["./src/**/*.tsx"],
   theme: {
     extend: {
-      fontFamily: "Roboto, sans-serif",
+      fontFamily: {
+        sans: ["Roboto", "sans-serif"],
+        title: "Poppins",
+      },
+      fontWeight: 400,
       colors: {
         gray: {
           100: "#FFF",
