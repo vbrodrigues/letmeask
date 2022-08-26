@@ -1,13 +1,6 @@
 /* eslint-disable no-unused-vars */
-import {
-  Chat,
-  CheckCircle,
-  ThumbsUp,
-  Trash,
-  User,
-  XCircle,
-} from "phosphor-react";
-import { ReactNode } from "react";
+import { Chat, CheckCircle, ThumbsUp, Trash, User } from "phosphor-react";
+import { ReactNode, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { SolidButton } from "./SolidButton";
 import { Modal } from "./Modal";
@@ -26,23 +19,32 @@ export interface QuestionProps {
     avatar?: string | null;
     name: string;
   };
-  likes?: number;
+  initialLikes?: number;
   type?: "admin" | "user";
   onSelect: () => void;
   onFinish: () => void;
   onDelete: () => void;
+  onLike: () => void;
 }
 
 export function Question({
   onSelect,
   onFinish,
   onDelete,
+  onLike,
   state = "default",
   author,
-  likes = 0,
+  initialLikes = 0,
   type = "admin",
   children,
 }: QuestionProps) {
+  const [likes, setLikes] = useState<number>(initialLikes);
+
+  async function handleLike() {
+    setLikes((state) => state + 1);
+    await onLike();
+  }
+
   return (
     <div
       className={`p-6 rounded-lg shadow-sm flex flex-col gap-6 
@@ -125,6 +127,7 @@ export function Question({
               size={24}
               color={state === "selected" ? "#835AFD" : "#737380"}
               className="cursor-pointer hover:opacity-70 transition-opacity"
+              onClick={handleLike}
             />
           </div>
         )}

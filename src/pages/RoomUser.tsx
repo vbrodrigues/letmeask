@@ -1,5 +1,5 @@
 import { Copy, SignOut, User } from "phosphor-react";
-import { useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import logoImg from "../assets/Logo.svg";
 import noQuestionsImg from "../assets/ChatBubbles.svg";
@@ -8,6 +8,7 @@ import { SolidButton } from "../components/SolidButton";
 import { useAuth } from "../hooks/useAuth";
 import { Room, Question as IQuestion } from "../contexts/roomsContext";
 import { useRooms } from "../hooks/useRoom";
+import { uuidv4 } from "@firebase/util";
 
 export function RoomUser() {
   const { roomId } = useParams<{
@@ -16,8 +17,9 @@ export function RoomUser() {
 
   const [room, setRoom] = useState({} as Room);
   const [questions, setQuestions] = useState<IQuestion[]>([]);
+  const [questionText, setQuestionText] = useState("");
 
-  const { getRoomById } = useRooms();
+  const { getRoomById, addQuestionToRoom, incrementQuestionLikes } = useRooms();
 
   useEffect(() => {
     async function fetchRoom() {
@@ -26,7 +28,11 @@ export function RoomUser() {
 
         if (room) {
           setRoom(room);
-          setQuestions(room.questions);
+          const questionsArray = [];
+          for (const [questionId, question] of Object.entries(room.questions)) {
+            questionsArray.push(question);
+          }
+          setQuestions(questionsArray);
         }
       }
     }
@@ -47,6 +53,17 @@ export function RoomUser() {
   const [copiedToClipboard, setCopiedToClipboard] = useState(false);
 
   const navigate = useNavigate();
+
+  async function handleSendQuestion(event: FormEvent) {
+    event.preventDefault();
+    await addQuestionToRoom(roomId, {
+      author: { id: user.id, name: user?.name, avatar: user?.avatar },
+      content: questionText,
+      createdAt: new Date().toISOString(),
+      likes: 0,
+    });
+    event.target.value = "";
+  }
 
   function handleSelectQuestion(questionId: string) {
     const isAnswered = answeredQuestionIds.find(
@@ -86,6 +103,10 @@ export function RoomUser() {
 
   function handleLeaveRoom() {
     navigate("/users/login");
+  }
+
+  async function handleLikeQuestion(questionId: string) {
+    await incrementQuestionLikes(roomId, questionId);
   }
 
   return (
@@ -129,10 +150,15 @@ export function RoomUser() {
           <strong className="text-2xl font-title">{room.title}</strong>
         </div>
 
-        <form className="flex flex-col items-end gap-4 mb-4">
+        <form
+          className="flex flex-col items-end gap-4 mb-4"
+          onSubmit={handleSendQuestion}
+        >
           <textarea
+            maxLength={140}
             className="resize-none max-h-36 w-full p-4 rounded-lg shadow-sm border outline-none focus:border focus:border-purple-300"
             placeholder="O que você quer perguntar?"
+            onChange={(event) => setQuestionText(event.target.value)}
           />
           <div className="flex justify-between w-full">
             <div className="flex gap-4 items-center">
@@ -177,11 +203,12 @@ export function RoomUser() {
                       key={question.id}
                       id={question.id}
                       author={question.author}
-                      likes={question.likes}
+                      initialLikes={question.likes}
                       type="user"
                       onSelect={() => handleSelectQuestion(question.id)}
                       onFinish={() => handleFinishQuestion(question.id)}
                       onDelete={() => handleDeleteQuestion(question.id)}
+                      onLike={() => handleLikeQuestion(question.id)}
                       state={
                         answeredQuestionIds.find(
                           (questionId) => questionId === question.id

@@ -7,6 +7,7 @@ import { BorderButton } from "../components/BorderButton";
 import { Question } from "../components/Question";
 import { Modal } from "../components/Modal";
 import * as Dialog from "@radix-ui/react-dialog";
+import * as Tooltip from "@radix-ui/react-tooltip";
 import { SolidButton } from "../components/SolidButton";
 import { useRooms } from "../hooks/useRoom";
 import { Room, Question as IQuestion } from "../contexts/roomsContext";
@@ -17,10 +18,9 @@ export function RoomAdmin() {
   }>();
 
   const [room, setRoom] = useState<Room | undefined>({} as Room);
-
   const [questions, setQuestions] = useState<IQuestion[]>([]);
 
-  const { getRoomById, closeRoom } = useRooms();
+  const { getRoomById, closeRoom, removeQuestionFromRoom } = useRooms();
 
   useEffect(() => {
     async function fetchRoom() {
@@ -29,7 +29,11 @@ export function RoomAdmin() {
 
         if (room) {
           setRoom(room);
-          setQuestions(room.questions);
+          const questionsArray = [];
+          for (const [questionId, question] of Object.entries(room.questions)) {
+            questionsArray.push(question);
+          }
+          setQuestions(questionsArray);
         }
       }
     }
@@ -46,8 +50,9 @@ export function RoomAdmin() {
   const [answeredQuestionIds, setAnsweredQuestionIds] = useState<string[]>([]);
 
   const [copiedToClipboard, setCopiedToClipboard] = useState(false);
-  const answeredQuestions = room?.questions
-    ? room.questions.filter((question) =>
+
+  const answeredQuestions = questions
+    ? questions.filter((question) =>
         answeredQuestionIds.find((q) => q === question.id)
       )
     : [];
@@ -74,10 +79,11 @@ export function RoomAdmin() {
     setAnsweredQuestionIds((state) => [...state, questionId]);
   }
 
-  function handleDeleteQuestion(questionId: string) {
-    const question = room?.questions.find((q) => q.id === questionId);
+  async function handleDeleteQuestion(questionId: string) {
+    const question = questions.find((q) => q.id === questionId);
 
     if (question) {
+      await removeQuestionFromRoom(roomId, questionId);
       setQuestions((state) => state.filter((q) => q.id !== questionId));
     }
   }
@@ -106,20 +112,40 @@ export function RoomAdmin() {
         <header className="flex justify-between w-[1440px] items-center mx-40 my-6 ">
           <img src={logoImg} alt="" className="w-28" />
           <div className="flex gap-2 max-h-10 items-center">
-            <p
-              className={`text-gray-900 text-sm font-title ${
-                copiedToClipboard ? "" : "hidden"
-              }`}
-            >
-              Copiado!
-            </p>
             <div className="flex w-40 h-10 rounded-lg overflow-hidden border border-purple-300">
-              <span
-                className="flex w-11 items-center justify-center bg-purple-300 cursor-pointer hover:opacity-90 transition-opacity"
-                onClick={handleCopyToClipboard}
-              >
-                <Copy size={24} color="#f8f8f8" />
-              </span>
+              <Tooltip.Provider disableHoverableContent>
+                <Tooltip.Root delayDuration={0}>
+                  <Tooltip.Trigger
+                    onMouseEnter={(event) => {
+                      event.preventDefault();
+                    }}
+                    onMouseLeave={(event) => {
+                      event.preventDefault();
+                    }}
+                    onClick={handleCopyToClipboard}
+                    className="flex w-11 items-center justify-center bg-purple-300 cursor-pointer hover:opacity-90 transition-opacity"
+                  >
+                    <span
+                      className="flex w-11 items-center justify-center bg-purple-300 cursor-pointer hover:opacity-90 transition-opacity"
+                      // onClick={handleCopyToClipboard}
+                    >
+                      <Copy size={24} color="#f8f8f8" />
+                    </span>
+                  </Tooltip.Trigger>
+                  <Tooltip.Content
+                    side="left"
+                    sideOffset={8}
+                    className={`${copiedToClipboard ? "" : "hidden"}`}
+                  >
+                    <Tooltip.Arrow className="fill-gray-100" />
+                    <div className="bg-gray-100 p-3 rounded-lg">
+                      <p className="text-gray-700 text-sm font-title">
+                        Copiado!
+                      </p>
+                    </div>
+                  </Tooltip.Content>
+                </Tooltip.Root>
+              </Tooltip.Provider>
               <span className="flex items-center justify-center text-gray-900 text-sm px-3 py-3">
                 <p className="font-bold">Sala #{roomNumberParsed}</p>
               </span>
@@ -185,10 +211,11 @@ export function RoomAdmin() {
                         key={question.id}
                         id={question.id}
                         author={question.author}
-                        likes={question.likes}
+                        initialLikes={question.likes}
                         onSelect={() => handleSelectQuestion(question.id)}
                         onFinish={() => handleFinishQuestion(question.id)}
                         onDelete={() => handleDeleteQuestion(question.id)}
+                        onLike={() => {}}
                         state={
                           answeredQuestionIds.find(
                             (questionId) => questionId === question.id

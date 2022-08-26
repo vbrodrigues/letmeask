@@ -41,8 +41,8 @@ export function AdminHome() {
         </div>
       </aside>
 
-      <main className="flex flex-col flex-1 h-[100vh] justify-center items-center">
-        <div className="flex flex-col gap-8 max-w-xs justify-center items-center">
+      <main className="flex flex-col flex-1 h-[100vh] justify-center items-center dark:bg-gray-900">
+        <div className="flex flex-col gap-8 max-w-xs justify-start items-center">
           <img src={logoImg} alt="" className="h-20 mb-14" />
 
           <div className="flex gap-4 items-center">
@@ -54,11 +54,13 @@ export function AdminHome() {
                   <User color="#fff" size={20} />
                 )}
               </span>
-              <strong>{user?.name}</strong>
+              <strong className="dark:text-gray-300">{user?.name}</strong>
             </span>
           </div>
 
-          <p className="text-2xl font-bold font-title">Crie uma nova sala</p>
+          <p className="text-2xl font-bold font-title dark:text-gray-300">
+            Crie uma nova sala
+          </p>
 
           <div>
             <form className="flex flex-col gap-4" onSubmit={handleCreateRoom}>
@@ -72,7 +74,7 @@ export function AdminHome() {
               <SolidButton type="submit" color="main" text="Criar sala" />
             </form>
           </div>
-          <span className="text-sm">
+          <span className="text-sm dark:text-gray-300">
             Quer entrar em uma sala já existente?{" "}
             <NavLink to="/admin/login">
               <a href="#" className="text-purple-500">

@@ -12,6 +12,7 @@ import {
   child,
   get,
   update,
+  remove,
 } from "../services/firebase";
 
 interface Author {
@@ -47,6 +48,8 @@ interface RoomsContextProps {
     callback: (roomData: Room) => void
   ) => Promise<void>;
   addQuestionToRoom: (roomId: string, question: Question) => Promise<void>;
+  removeQuestionFromRoom: (roomId: string, questionId: string) => Promise<void>;
+  incrementQuestionLikes: (roomId: string, questionId: string) => Promise<void>;
 }
 
 export const RoomsContext = createContext({} as RoomsContextProps);
@@ -125,10 +128,33 @@ export function RoomsContextProvider({ children }: RoomsContextProviderProps) {
     roomId: string,
     question: Question
   ): Promise<void> {
-    await update(ref(database, `rooms/${roomId}`), {
-      questions: {
-        question,
-      },
+    const questionRef = await push(
+      child(ref(database), `rooms/${roomId}/questions`),
+      question
+    );
+    await update(
+      ref(database, `rooms/${roomId}/questions/${questionRef.key}`),
+      { id: questionRef.key }
+    );
+  }
+
+  async function removeQuestionFromRoom(
+    roomId: string,
+    questionId: string
+  ): Promise<void> {
+    console.log(`rooms/${roomId}/questions/${questionId}`);
+    await remove(ref(database, `rooms/${roomId}/questions/${questionId}`));
+  }
+
+  async function incrementQuestionLikes(
+    roomId: string,
+    questionId: string
+  ): Promise<void> {
+    const question = await (
+      await get(child(ref(database), `rooms/${roomId}/questions/${questionId}`))
+    ).val();
+    await update(ref(database, `rooms/${roomId}/questions/${questionId}`), {
+      likes: question.likes + 1,
     });
   }
 
@@ -140,6 +166,8 @@ export function RoomsContextProvider({ children }: RoomsContextProviderProps) {
         getRoomById,
         getRoomByNumber,
         addQuestionToRoom,
+        removeQuestionFromRoom,
+        incrementQuestionLikes,
       }}
     >
       {children}

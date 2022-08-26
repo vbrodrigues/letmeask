@@ -21,6 +21,7 @@ import {
   orderByChild,
   onChildAdded,
   limitToFirst,
+  remove,
 } from "firebase/database";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -61,4 +62,5 @@ export {
   orderByChild,
   onChildAdded,
   limitToFirst,
+  remove,
 };
